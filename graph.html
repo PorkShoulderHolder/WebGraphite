@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - buffergeometry - lines</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				color: #000000;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+			}
+            #container{
+                background: #000000;;
+            }
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+			}
+
+			a {
+
+				color: #0080ff;
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<div id="container"></div>
+		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> webgl - buffergeometry - lines</div>
+
+		<script src="webgl-frameworks/three.min.js"></script>
+        <script src="gexf/build/gexf.min.js"></script>
+        <script src="GraphProc/GraphProc.js"></script>
+		<script src="Detector.js"></script>
+		<script src="stats.min.js"></script>
+        <script src="TrackballControls.js"></script>
+
+		<script>
+
+            var xmlDoc;
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var container, stats;
+
+			var camera, scene, renderer, controls, paths, neighbors, graph, meshes;
+            var geometries = [];
+            var ba = 0;
+           // var colors;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.getElementById( 'container' );
+
+				//
+
+				camera = new THREE.PerspectiveCamera( 27, window.innerWidth / window.innerHeight, 1, 4000 );
+				camera.position.z = 950;
+
+                controls = new THREE.TrackballControls( camera );
+				controls.rotateSpeed = 2.0;
+				controls.zoomSpeed = 1.2;
+				controls.panSpeed = 0.8;
+
+				controls.noZoom = false;
+				controls.noPan = false;
+
+				controls.staticMoving = false;
+				controls.dynamicDampingFactor = 0.3;
+
+				controls.keys = [ 65, 83, 68 ];
+
+				controls.addEventListener( 'change', render );
+
+
+                scene = new THREE.Scene();
+
+                graph = gexf.fetch("Untitled.gexf");
+
+				var r = 100;
+                console.log(graph);
+                var graphDict = {};
+                var edgeDict = {};
+				for ( var g = 0; g < graph.nodes.length; g ++ ) {
+                    var node = graph.nodes[g];
+                    graphDict[node.id] = node;
+                };
+                for ( var e = 0; e < graph.edges.length; e ++ ) {
+                    var edge = graph.edges[e];
+                    edgeDict[edge.source + ":" + edge.target] = true;
+                };
+                console.log(graphDict);
+                graph.edges.sort(function(a,b){
+                   return a.source < b.source;
+                });
+
+                prevNode = {"id":null};
+
+
+                // material.transparent = true;
+                // material.opacity = 0.02;
+                var resolution = 38;
+                var segments = graph.edges.length;
+                var total = 0;
+
+                neighbors = getNeighborFormat(graph)
+                paths = pathFind(graph, neighbors);
+                testpt = 38;
+                for (var i = 0; i < paths.length; i ++){
+                    var path = paths[i];
+                    var nodes = new Float32Array( (path.length  - 1) * 3 * 10 );
+                    var nodeColors = new Float32Array( (path.length -1 ) * 3 * 10 );
+                    for(var j = 0; j < path.length - 1; j ++){
+                        var source = graphDict[path[j]];
+
+                        var multiplier = 0.01;
+
+                        var target = graphDict[path [j + 1]];
+                        var x1 = source.viz.position.x * multiplier;
+                        var y1 = source.viz.position.y * multiplier;
+                        var z1 = source.viz.position.z * multiplier;
+
+                        var x2 = target.viz.position.x * multiplier;
+                        var y2 = target.viz.position.y * multiplier;
+                        var z2 = target.viz.position.z * multiplier;
+
+                        var startPos = new THREE.Vector3(x1, y1, z1);
+                        var finPos = new THREE.Vector3(x2, y2, z2);
+                        var difVect = new THREE.Vector3(x2, y2, z2);
+                        difVect.sub(startPos);
+                        var midPoint = new THREE.Vector3();
+                        midPoint.copy(difVect.divideScalar(2).add(startPos));
+                        var elbow = difVect.cross(new THREE.Vector3(1,1,0)).normalize().multiplyScalar(0.2 * startPos.distanceTo(finPos));
+
+                        var curve = new THREE.QuadraticBezierCurve3(
+                            startPos,
+                            new THREE.Vector3(midPoint.x + elbow.x, midPoint.y + elbow.y, midPoint.z + elbow.z),//midPoint.add(new THREE.Vector3(Math.random(),Math.random(),Math.random()).subScalar(0.5).multiplyScalar(10)),
+                            finPos
+                        );
+                        var pointsToAdd = curve.getPoints( 10 );
+
+                        var l = 0;
+                        var k = j * 3 * pointsToAdd.length;
+                        var r1 = target.viz.color.split('(')[1].split(')')[0].split(',')[0];
+                        var g1 = target.viz.color.split('(')[1].split(')')[0].split(',')[1];
+                        var b1 = target.viz.color.split('(')[1].split(')')[0].split(',')[2];
+
+                        var format_id = [source.id,target.id].sort().join(':');
+
+                         if(edgeIndices[format_id]){
+                                edgeIndices[format_id].push({path:i, index:k})
+                            }
+                            else{
+                                edgeIndices[format_id] = [{path:i, index:k}]
+                            }
+                        while(l < pointsToAdd.length * 3){
+                            nodes[ k + l ] = pointsToAdd[l/3].x;
+                            nodes[ k + l + 1 ] = pointsToAdd[l/3].y;
+                            nodes[ k + l + 2 ] = pointsToAdd[l/3].z;
+
+                            nodeColors[ k + l ] = r1 / 256.0;
+                            nodeColors[ k + l + 1 ] = g1 / 256.0;
+                            nodeColors[ k + l + 2 ] = b1 / 256.0;
+
+                            l+=3;
+                        }
+                    }
+                    var geometry = new THREE.BufferGeometry();
+                    var material = new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors, linewidth: 1, fog:true });
+
+
+                    material.opacity =0.11;
+
+                    material.transparent = true;
+                    material.blending = THREE.AdditiveBlending;
+                    geometry.addAttribute( 'position', new THREE.BufferAttribute( nodes, 3 ) );
+                    geometry.addAttribute( 'color', new THREE.BufferAttribute( nodeColors, 3 ) );
+                    geometry.dynamic = true;
+                    geometry.computeBoundingSphere();
+
+                    var mesh = new THREE.Line( geometry, material );
+                    scene.add(mesh);
+                    geometries.push(geometry);
+                 }
+
+				renderer = new THREE.WebGLRenderer( { antialias: false, alpha: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				renderer.gammaInput = true;
+				renderer.gammaOutput = true;
+                container.appendChild( renderer.domElement );
+
+				//
+                scene.rotation.x = 0.2;
+                scene.rotation.y = 0.3;
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				controls.update();
+				render();
+				stats.update();
+			}
+
+			function render() {
+                ba ++;
+				var time = Date.now() * 0.001;
+				//scene.rotation.x = time * 0.25;
+				//scene.rotation.y = time * 0.5;
+                var rand = Math.floor(Math.random() * graph.nodes.length);
+                if(ba % 100 == 0){
+                    randNode = graph.nodes[rand].id; //e = graph.nodes[rand].id;
+
+                    var nodes = [].concat(neighbors[randNode].free).concat(neighbors[randNode].touched).concat(neighbors[randNode].saturated)
+                    nodes.forEach(function(n){
+                        var node = neighbors[n];
+                        var format_id = [randNode,n].sort().join(':');
+                        for(var pt = 0; pt < 30; pt += 3){
+                            var edges = edgeIndices[format_id];
+                            edges.forEach(function(edge){
+                                geometries[edge.path].attributes.color.array[edge.index + pt] = 1.0;
+                                geometries[edge.path].attributes.color.array[edge.index + pt + 1] = 0.0;
+                                geometries[edge.path].attributes.color.array[edge.index + pt + 2] = 0.0;
+                                geometries[edge.path].attributes.color.needsUpdate = true;
+
+                             })
+                         }
+                    });
+                    geometries[neighbors[nodes[0]].path].attributes.color.needsUpdate = true;
+                }
+                if(ba % 100 == 3){
+                    randNode = graph.nodes[rand].id; //e = graph.nodes[rand].id;
+                    var nodes = [].concat(neighbors[randNode].free).concat(neighbors[randNode].touched).concat(neighbors[randNode].saturated)
+                    nodes.forEach(function(n){
+                        var node = neighbors[n];
+                        var format_id = [randNode,n].sort().join(':');
+                        for(var pt = 0; pt < 30; pt += 3){
+                                var edges = edgeIndices[format_id];
+                                edges.forEach(function(edge){
+                                    geometries[edge.path].attributes.color.array[edge.index + pt] = 1.0;
+                                    geometries[edge.path].attributes.color.array[edge.index + pt + 1] = 1.0;
+                                    geometries[edge.path].attributes.color.array[edge.index + pt + 2] = 1.0;
+                                    geometries[edge.path].attributes.color.needsUpdate = true;
+
+                             })
+                        }
+
+                    });
+                }
+				renderer.render( scene, camera );
+			}
+		</script>
+
+	</body>
+</html>

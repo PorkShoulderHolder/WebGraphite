@@ -26,7 +26,7 @@
   edge = new Edge(node1, node2);
 
   An edge can also be extended with the data attribute. E.g. set a
-  type like "friends", different types can then be draw in differnt ways. 
+  type like "friends", different types can then be draw in different ways.
 
 
   Graph:

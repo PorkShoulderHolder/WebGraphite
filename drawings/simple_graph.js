@@ -177,8 +177,16 @@ Drawing.SimpleGraph = function(options) {
           }
         }
       }
-      steps++;
+            steps ++;;
     }
+    for (var i = 20; i >= 0; i--) {
+        var target_node = new Node(Math.floor(Math.random() * numNodes));
+        var node = new Node(Math.floor(Math.random() * numNodes));
+        if(graph.addEdge(node, target_node)) {
+            drawEdge(node, target_node);
+          }
+      };
+
 
     that.layout_options.width = that.layout_options.width || 2000;
     that.layout_options.height = that.layout_options.height || 2000;
