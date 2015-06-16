@@ -2,3 +2,4 @@
 .idea
 *.gexf
 *.csv
+*.properties

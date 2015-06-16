@@ -38,12 +38,12 @@
 		<div id="container"></div>
 		<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> webgl - buffergeometry - lines</div>
 
-		<script src="webgl-frameworks/three.min.js"></script>
-        <script src="gexf/build/gexf.min.js"></script>
-        <script src="GraphProc/GraphProc.js"></script>
+		<script src="../static/webgl-frameworks/three.min.js"></script>
+        <script src="../static/GraphProc/gexf/build/gexf.min.js"></script>
+        <script src="../static/GraphProc/GraphProc.js"></script>
 		<script src="Detector.js"></script>
-		<script src="stats.min.js"></script>
-        <script src="TrackballControls.js"></script>
+		<script src="../static/stats.min.js"></script>
+        <script src="../static/TrackballControls.js"></script>
 
 		<script>
 
@@ -142,7 +142,7 @@
                         difVect.sub(startPos);
                         var midPoint = new THREE.Vector3();
                         midPoint.copy(difVect.divideScalar(2).add(startPos));
-                        var elbow = difVect.cross(new THREE.Vector3(1,1,0)).normalize().multiplyScalar(0.04 * startPos.distanceTo(finPos));
+                        var elbow = difVect.cross(new THREE.Vector3(1,1,0)).normalize().multiplyScalar(0.18 * startPos.distanceTo(finPos));
 
                         var curve = new THREE.QuadraticBezierCurve3(
                             startPos,
@@ -171,8 +171,8 @@
                             nodes[ k + l + 2 ] = pointsToAdd[l/3].z;
 
                             nodeColors[ k + l ] = 100/ 256.0;
-                            nodeColors[ k + l + 1 ] = 100 / 256.0;
-                            nodeColors[ k + l + 2 ] =  100 / 256.0;
+                            nodeColors[ k + l + 1 ] = 240 / 256.0;
+                            nodeColors[ k + l + 2 ] =  240 / 256.0;
 
                             l+=3;
                         }
@@ -181,7 +181,7 @@
                     var material = new THREE.LineBasicMaterial({vertexColors: THREE.VertexColors, linewidth: 1, fog:true });
 
 
-                    material.opacity =0.11;
+                    material.opacity =0.15;
 
                     material.transparent = true;
                     material.blending = THREE.AdditiveBlending;
