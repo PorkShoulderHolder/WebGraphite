@@ -48,7 +48,7 @@
 		<script>
 
             var xmlDoc;
-			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+			//if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var container, stats;
 
@@ -87,7 +87,7 @@
 
                 scene = new THREE.Scene();
 
-                graph = gexf.fetch("Untitled.gexf");
+                graph = gexf.fetch("smmodeltestrun.gexf");
 
 				var r = 100;
                 console.log(graph);
@@ -125,7 +125,7 @@
                     for(var j = 0; j < path.length - 1; j ++){
                         var source = graphDict[path[j]];
 
-                        var multiplier = 0.01;
+                        var multiplier = 0.07;
 
                         var target = graphDict[path [j + 1]];
                         var x1 = source.viz.position.x * multiplier;
@@ -142,7 +142,7 @@
                         difVect.sub(startPos);
                         var midPoint = new THREE.Vector3();
                         midPoint.copy(difVect.divideScalar(2).add(startPos));
-                        var elbow = difVect.cross(new THREE.Vector3(1,1,0)).normalize().multiplyScalar(0.2 * startPos.distanceTo(finPos));
+                        var elbow = difVect.cross(new THREE.Vector3(1,1,0)).normalize().multiplyScalar(0.04 * startPos.distanceTo(finPos));
 
                         var curve = new THREE.QuadraticBezierCurve3(
                             startPos,
@@ -170,9 +170,9 @@
                             nodes[ k + l + 1 ] = pointsToAdd[l/3].y;
                             nodes[ k + l + 2 ] = pointsToAdd[l/3].z;
 
-                            nodeColors[ k + l ] = r1 / 256.0;
+                            nodeColors[ k + l ] = r1/ 256.0;
                             nodeColors[ k + l + 1 ] = g1 / 256.0;
-                            nodeColors[ k + l + 2 ] = b1 / 256.0;
+                            nodeColors[ k + l + 2 ] =  b1 / 256.0;
 
                             l+=3;
                         }
@@ -234,7 +234,7 @@
 				//scene.rotation.x = time * 0.25;
 				//scene.rotation.y = time * 0.5;
                 var rand = Math.floor(Math.random() * graph.nodes.length);
-                if(ba % 100 == 0){
+                if(ba % 100 == 102){
                     randNode = graph.nodes[rand].id; //e = graph.nodes[rand].id;
 
                     var nodes = [].concat(neighbors[randNode].free).concat(neighbors[randNode].touched).concat(neighbors[randNode].saturated)
@@ -245,8 +245,8 @@
                             var edges = edgeIndices[format_id];
                             edges.forEach(function(edge){
                                 geometries[edge.path].attributes.color.array[edge.index + pt] = 1.0;
-                                geometries[edge.path].attributes.color.array[edge.index + pt + 1] = 0.0;
-                                geometries[edge.path].attributes.color.array[edge.index + pt + 2] = 0.0;
+                                geometries[edge.path].attributes.color.array[edge.index + pt + 1] = 1.0;
+                                geometries[edge.path].attributes.color.array[edge.index + pt + 2] = 1.0;
                                 geometries[edge.path].attributes.color.needsUpdate = true;
 
                              })
@@ -254,7 +254,7 @@
                     });
                     geometries[neighbors[nodes[0]].path].attributes.color.needsUpdate = true;
                 }
-                if(ba % 100 == 3){
+                if(ba % 100 == 103){
                     randNode = graph.nodes[rand].id; //e = graph.nodes[rand].id;
                     var nodes = [].concat(neighbors[randNode].free).concat(neighbors[randNode].touched).concat(neighbors[randNode].saturated)
                     nodes.forEach(function(n){
