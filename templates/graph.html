@@ -87,7 +87,7 @@
 
                 scene = new THREE.Scene();
 
-                graph = gexf.fetch("smmodeltestrun.gexf");
+                graph = gexf.fetch("../static/test-data/testrun.gexf");
 
 				var r = 100;
                 console.log(graph);
@@ -125,7 +125,7 @@
                     for(var j = 0; j < path.length - 1; j ++){
                         var source = graphDict[path[j]];
 
-                        var multiplier = 0.07;
+                        var multiplier = 0.01;
 
                         var target = graphDict[path [j + 1]];
                         var x1 = source.viz.position.x * multiplier;
@@ -170,9 +170,9 @@
                             nodes[ k + l + 1 ] = pointsToAdd[l/3].y;
                             nodes[ k + l + 2 ] = pointsToAdd[l/3].z;
 
-                            nodeColors[ k + l ] = 100/ 256.0;
-                            nodeColors[ k + l + 1 ] = 240 / 256.0;
-                            nodeColors[ k + l + 2 ] =  240 / 256.0;
+                            nodeColors[ k + l ] = r1/ 256.0;
+                            nodeColors[ k + l + 1 ] = g1 / 256.0;
+                            nodeColors[ k + l + 2 ] =  b1 / 256.0;
 
                             l+=3;
                         }
