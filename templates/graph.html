@@ -87,7 +87,9 @@
 
                 scene = new THREE.Scene();
 
-                graph = gexf.fetch("../static/test-data/testrun.gexf");
+                var FILENAME = "{{ file_name|safe }}"
+
+                graph = gexf.fetch("../static/test-data/" + FILENAME);
 
 				var r = 100;
                 console.log(graph);
